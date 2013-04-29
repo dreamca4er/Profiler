@@ -1,4 +1,4 @@
 prof
 ====
 
-Profiling GASNet communicative operations on Cray Chapel
+Profiling GASNet communicative operations in Cray Chapel
