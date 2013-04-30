@@ -1,19 +1,20 @@
 #!/bin/bash
 
 name="wrap.c"
-foo="chpl_comm_get"
+foo1="chpl_comm_get"
+foo2="chpl_comm_put"
+options="-Xlinker --wrap=$foo1 -Xlinker --wrap=$foo2"
 
-read -p "Do you wanna change defaults? ($name $foo) (y to change)" reply
+read -p "Do you wanna change defaults? ($name) (y to change)" reply
 
 if [ "$reply" == 'y' ]
 then
   read -p "Input wrapper file name: " name
-  read -p "Input name of the function you wanna wrap:" foo
 fi
 
 mkdir -p results
-rm -f results/$foo h.o* prog prog_real
+rm -f results/chpl_comm* h.o* prog prog_real
 
-chpl prog.chpl -o prog $name --ldflags "-Xlinker --wrap="$foo
+chpl prog.chpl -o prog $name --ldflags "$options"
 
 qsub h.job
