@@ -36,7 +36,7 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
   tim.tv_usec = fin.tv_usec - st.tv_usec;
   time_from_st = (double)(st.tv_sec - prog_start.tv_sec);
   time_from_st += (st.tv_usec - prog_start.tv_usec) * 0.000001;
-  fprintf(f, "%d gets from %d, %ld.%ld s, %.3lf s from init, %s\n",
+  fprintf(f, "%d %d get %ld.%ld s, %.3lf s from init, %s\n",
 	  chpl_localeID, locale, tim.tv_sec, tim.tv_usec, time_from_st, fn);
   /*fprintf(f, "locale = %d, elemSize = %d, typeIndex = %d, len = %d, ln = %d, chpl_ctring = %s\n",
           locale, elemSize, typeIndex, len, ln, fn);*/
@@ -64,7 +64,7 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
   tim.tv_usec = fin.tv_usec - st.tv_usec;
   time_from_st = (double)(st.tv_sec - prog_start.tv_sec);
   time_from_st += (st.tv_usec - prog_start.tv_usec) * 0.000001;
-  fprintf(f, "%d puts to %d, %ld.%ld s, %.3lf s from init, %s\n",
+  fprintf(f, "%d %d put %ld.%ld s, %.3lf s from init, %s\n",
           chpl_localeID, locale, tim.tv_sec, tim.tv_usec, time_from_st, fn);
 
   fclose(f);
