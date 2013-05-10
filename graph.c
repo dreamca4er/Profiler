@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   oper **ops;
   f = fopen("results/m", "r");
   graph = fopen("results/graph.gv", "w");
-  nl = fopen("results/numloc", "r");
+  nl = fopen("results/info", "r");
   matrix = fopen("results/matrix.html", "w");
   fscanf(nl, "%s", info);
   fclose(nl);
