@@ -13,8 +13,8 @@ typedef struct op{
 typedef struct act{
   int from;
   int to;
-  char *module;
-  char *op;
+  char module[20];
+  char op[5];
   float exec;
   float time;
 }action;
@@ -48,9 +48,9 @@ int main(int argc, char** argv)
   char info[100], to[100], comm_op[100],
        buf[100], **modules = NULL, **m_temp;
   float end_time, ops_time = 0.0;
-  action ac, max_op;
-  ac.module = (char *)malloc(20); ac.op = (char *)malloc(3);
-  max_op.module = (char *)malloc(20); max_op.op = (char *)malloc(3);
+  action *ac, *max_op;
+  ac = (action *)malloc(sizeof(action));
+  max_op = (action *)malloc(sizeof(action));
   FILE *f, *graph, *nl, *matrix, *timeline;
   oper **ops;
   f = fopen("results/m", "r");
@@ -82,29 +82,29 @@ int main(int argc, char** argv)
     if(feof(f))
       break;
 
-    ac.from = atoi(info);
+    ac->from = atoi(info);
     fprintf(graph, "  loc%s -> ", info);
     fscanf(f, "%s", to);
-    ac.to = atoi(to);
+    ac->to = atoi(to);
     fprintf(graph, "loc%s ", to);
     fscanf(f, "%s", comm_op);
     fprintf(graph, "[ label = \"%s\" ];\n", comm_op);
     fscanf(f, "%s", buf);
-    ac.exec = atof(buf);
-    ops_time += ac.exec;  // Gathering about all comm ops exec time summed
+    ac->exec = atof(buf);
+    ops_time += ac->exec;  // Gathering about all comm ops exec time summed
     fscanf(f, "%s", buf);
-    ac.time = atof(buf);
+    ac->time = atof(buf);
     fscanf(f, "%s", buf);
     strcpy(buf, get_name(buf));
-    strcpy(ac.module, buf);
+    strcpy(ac->module, buf);
 
-    if(ac.exec > max_op.exec){
-      max_op.exec = ac.exec; // Looking for the longest comm op
-      max_op.time = ac.time;
-      strcpy(max_op.module, buf);
-      strcpy(max_op.op, comm_op);
-      max_op.from = ac.from;
-      max_op.to = ac.to;
+    if(ac->exec > max_op->exec){
+      max_op->exec = ac->exec; // Looking for the longest comm op
+      max_op->time = ac->time;
+      strcpy(max_op->module, buf);
+      strcpy(max_op->op, comm_op);
+      max_op->from = ac->from;
+      max_op->to = ac->to;
     }
 
     if(modules == NULL){
@@ -129,68 +129,68 @@ int main(int argc, char** argv)
       }
     }
     found = 0;
-    rect_width = ((ac.exec / end_time) * 750 < 1?
-                 (int)((ac.exec / end_time) * 750) + 2:
-                 (int)((ac.exec / end_time) * 750));
+    rect_width = ((ac->exec / end_time) * 750 < 1?
+                 (int)((ac->exec / end_time) * 750) + 2:
+                 (int)((ac->exec / end_time) * 750));
     // Drawing timeline elements
     if(!strcmp(comm_op, "get")){
       ops[ atoi(info) ][ atoi(to) ].get++;
       numgets++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                         (int)((750 * ac.time) / end_time), cl * (ac.from + 1) - 20,
+                         (int)((750 * ac->time) / end_time), cl * (ac->from + 1) - 20,
                          rect_width,
-                         ac.module[0],
-                         ac.module[strlen(ac.module) - 6],
-                         ac.module[(strlen(ac.module) - 1) / 2]);
+                         ac->module[0],
+                         ac->module[strlen(ac->module) - 6],
+                         ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:grey;\"/>\n",
-                        (int)((750 * ac.time) / end_time) + rect_width / 2,
-                        (ac.from < ac.to ? cl * (ac.from + 1): cl * (ac.from + 1) - 20 ),
-                        (int)((750 * ac.time) / end_time) + rect_width / 2,
-                        cl * (ac.to + 1));
+                        (int)((750 * ac->time) / end_time) + rect_width / 2,
+                        (ac->from < ac->to ? cl * (ac->from + 1): cl * (ac->from + 1) - 20 ),
+                        (int)((750 * ac->time) / end_time) + rect_width / 2,
+                        cl * (ac->to + 1));
     }
     else{
       ops[ atoi(info) ][ atoi(to) ].put++;
       numputs++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                         (int)((750 * ac.time) / end_time), cl * (ac.from + 1),
+                         (int)((750 * ac->time) / end_time), cl * (ac->from + 1),
                          rect_width,
-                         ac.module[0],
-                         ac.module[strlen(ac.module) - 6],
-                         ac.module[(strlen(ac.module) - 1) / 2]);
+                         ac->module[0],
+                         ac->module[strlen(ac->module) - 6],
+                         ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:grey;stroke-width:1\"/>\n",
-                        (int)((750 * ac.time) / end_time) + rect_width / 2,
-                        (ac.from > ac.to? cl * (ac.from + 1):  cl * (ac.from + 1) + 20),
-                        (int)((750 * ac.time) / end_time) + rect_width / 2,
-                        cl * (ac.to + 1));
+                        (int)((750 * ac->time) / end_time) + rect_width / 2,
+                        (ac->from > ac->to? cl * (ac->from + 1):  cl * (ac->from + 1) + 20),
+                        (int)((750 * ac->time) / end_time) + rect_width / 2,
+                        cl * (ac->to + 1));
     }
   }
-  rect_width = ((max_op.exec / end_time) * 750 < 1?
-               (int)((max_op.exec / end_time) * 750) + 2:
-               (int)((max_op.exec / end_time) * 750));
+  rect_width = ((max_op->exec / end_time) * 750 < 1?
+               (int)((max_op->exec / end_time) * 750) + 2:
+               (int)((max_op->exec / end_time) * 750));
 
-  if(!strcmp(max_op.op, "get")){
+  if(!strcmp(max_op->op, "get")){
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
-                      (int)((750 * max_op.time) / end_time) + rect_width / 2,
-                      (max_op.from < max_op.to ? cl * (max_op.from + 1):
-                      cl * (max_op.from + 1) - 20 ),
-                      (int)((750 * max_op.time) / end_time) + rect_width / 2,
-                      cl * (max_op.to + 1));
+                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
+                      (max_op->from < max_op->to ? cl * (max_op->from + 1):
+                      cl * (max_op->from + 1) - 20 ),
+                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
+                      cl * (max_op->to + 1));
   }
   else{
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
-                      (int)((750 * max_op.time) / end_time) + rect_width / 2,
-                      (max_op.from > max_op.to? cl * (max_op.from + 1):
-                      cl * (max_op.from + 1) + 20),
-                      (int)((750 * max_op.time) / end_time) + rect_width / 2,
-                      cl * (max_op.to + 1));
+                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
+                      (max_op->from > max_op->to? cl * (max_op->from + 1):
+                      cl * (max_op->from + 1) + 20),
+                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
+                      cl * (max_op->to + 1));
   }
 
   fclose(f);
@@ -282,13 +282,13 @@ int main(int argc, char** argv)
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     the longest op was initiated by %s module;</text>\n",
-                    250, cl * numlocs + 80, max_op.module);
+                    250, cl * numlocs + 80, max_op->module);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     it was running for %f s (%f%% of time).</text>\n",
                     250, cl * numlocs + 105,
-                    max_op.exec, (max_op.exec / end_time) * 100);
+                    max_op->exec, (max_op->exec / end_time) * 100);
 
 
   // Net
@@ -317,9 +317,7 @@ int main(int argc, char** argv)
     free(modules[i]);
   free(modules);
 
-  free(ac.op);
-  free(ac.module);
-  free(max_op.op);
-  free(max_op.module);
+  free(ac);
+  free(max_op);
   return 0;
 }
