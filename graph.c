@@ -75,7 +75,7 @@ int main(int argc, char** argv)
   fprintf(graph, "  node [height = 1, width = 1.4];\n");
 
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"755px\">\n", cl * (numlocs + 1) + 60);
+  fprintf(timeline, "height = \"%dpx\" width = \"755px\">\n", cl * (numlocs + 1) + 70);
 
   while(1){
     fscanf(f, "%s", info);
@@ -276,18 +276,23 @@ int main(int argc, char** argv)
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
-                    Comm ops were running for %.3f s (%.2f%% of time); </text>\n",
-                    250, cl * numlocs + 55 , ops_time, (ops_time / end_time) * 100);
+                    Program was running for %.3f s; </text>\n",
+                    250, cl * numlocs + 55 , end_time);
+
+  fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
+                    style = \"fill:black;font-family:arial\"> \
+                    comm ops were running for %.3f s (%.2f%% of time); </text>\n",
+                    250, cl * numlocs + 79 , ops_time, (ops_time / end_time) * 100);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     the longest op was initiated by %s module;</text>\n",
-                    250, cl * numlocs + 80, max_op->module);
+                    250, cl * numlocs + 103, max_op->module);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     it was running for %f s (%f%% of time).</text>\n",
-                    250, cl * numlocs + 105,
+                    250, cl * numlocs + 127,
                     max_op->exec, (max_op->exec / end_time) * 100);
 
 
