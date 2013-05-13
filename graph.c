@@ -75,7 +75,7 @@ int main(int argc, char** argv)
   fprintf(graph, "  node [height = 1, width = 1.4];\n");
 
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"755px\">\n", cl * (numlocs + 1) + 70);
+  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 70);
 
   while(1){
     fscanf(f, "%s", info);
@@ -219,7 +219,15 @@ int main(int argc, char** argv)
     // locale lines tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\"> loc%d </text>\n",
-                    20, cl * (i + 1) + 6, i);
+                    5, cl * (i + 1) + 6, i);
+
+    fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
+                    fill = \"black\" font-family = \"arial\" font-size = \"8px\"> get </text>\n",
+                    35, cl * (i + 1) - 4);
+
+    fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
+                    fill = \"black\" font-family = \"arial\" font-size = \"8px\"> put </text>\n",
+                    35, cl * (i + 1) + 7);
 
 
     for(j = 0; j < numlocs; ++j){
