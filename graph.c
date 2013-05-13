@@ -218,16 +218,16 @@ int main(int argc, char** argv)
                     50, cl * (i + 1), 750, cl * (i + 1));
     // locale lines tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\"> loc%d </text>\n",
-                    5, cl * (i + 1) + 6, i);
+                    fill = \"black\" font-family = \"arial\" font-size = \"16px\"> loc%d </text>\n",
+                    -1, cl * (i + 1) + 6, i);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"8px\"> get </text>\n",
-                    35, cl * (i + 1) - 4);
+                    fill = \"black\" font-family = \"arial\" font-size = \"14px\"> get </text>\n",
+                    30, cl * (i + 1) - 2);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"8px\"> put </text>\n",
-                    35, cl * (i + 1) + 7);
+                    fill = \"black\" font-family = \"arial\" font-size = \"14px\"> put </text>\n",
+                    30, cl * (i + 1) + 11);
 
 
     for(j = 0; j < numlocs; ++j){
