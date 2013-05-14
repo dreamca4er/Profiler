@@ -72,10 +72,10 @@ int main(int argc, char** argv)
       ops[i][j].get = 0;
     }
   fprintf(graph, "digraph gr{\n");
-  fprintf(graph, "  node [height = 1, width = 1.4];\n");
+  fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
 
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 80);
+  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 100);
 
   while(1){
     fscanf(f, "%s", info);
@@ -137,8 +137,8 @@ int main(int argc, char** argv)
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
                          (int)((750 * ac->time) / end_time), cl * (ac->from + 1) - 20,
                          rect_width,
-                         ac->module[0],
-                         ac->module[strlen(ac->module) - 6],
+                         ac->module[7 % strlen(ac->module)],
+                         ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
@@ -155,8 +155,8 @@ int main(int argc, char** argv)
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
                          (int)((750 * ac->time) / end_time), cl * (ac->from + 1),
                          rect_width,
-                         ac->module[0],
-                         ac->module[strlen(ac->module) - 6],
+                         ac->module[7 % strlen(ac->module)],
+                         ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
@@ -233,9 +233,10 @@ int main(int argc, char** argv)
 
     for(j = 0; j < numlocs; ++j){
       if(ops[i][j].get != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\" ];\n", i, j, ops[i][j].get);
+        fprintf(graph, "  loc%d -> loc%d[ label = \
+                \"get,%d\", fontsize = 20];\n", i, j, ops[i][j].get);
       if(ops[i][j].put != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\" ];\n", i, j, ops[i][j].put);
+        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", fontsize = 20];\n", i, j, ops[i][j].put);
 
       if((ops[i][j].get && ops[i][j].put) != 1) // CHECK later !!
         // 0 put and 0 get fields
@@ -269,7 +270,7 @@ int main(int argc, char** argv)
         // Put ops text
         fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                         style = \"fill:black;font-family:arial\"> %d </text>\n",
-                        cl / 2 + cl * i + cl / 4 + cl / 2,
+                        cl / 2 + cl * i + cl / 2 + cl / 5,
                        	cl + cl * j + cl / 4 + cl / 6, ops[i][j].put);
       }
     }
@@ -297,8 +298,8 @@ int main(int argc, char** argv)
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
                     style = \"fill:rgb(%d, %d, %d)\"/>\n",
                     40, cl * numlocs + 40 + 30 * i, 20, 20,
-                    modules[i][0],
-                    modules[i][strlen(modules[i]) - 6],
+                    modules[i][7 % strlen(modules[i])],
+                    modules[i][strlen(modules[i]) - 7],
                     modules[i][(strlen(modules[i]) - 1) / 2]);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
