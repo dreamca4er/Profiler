@@ -83,12 +83,9 @@ int main(int argc, char** argv)
       break;
 
     ac->from = atoi(info);
-//  fprintf(graph, "  loc%s -> ", info);
     fscanf(f, "%s", to);
     ac->to = atoi(to);
-//  fprintf(graph, "loc%s ", to);
     fscanf(f, "%s", comm_op);
-//  fprintf(graph, "[ label = \"%s\" ];\n", comm_op);
     fscanf(f, "%s", buf);
     ac->exec = atof(buf);
     ops_time += ac->exec;
@@ -202,29 +199,35 @@ int main(int argc, char** argv)
   for(i = 0; i < numlocs; ++i){
     // Senders tags
     fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\"> loc%d </text>\n",
-                    cl / 2 + cl / 5 + i * cl, cl / 2, i);
+                    fill = \"black\" font-family = \"arial\">%d</text>\n",
+                    (i + 1) * cl, cl / 2, i);
     // Recievers tags
     fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                     transform = \"rotate(270 %d, %d)\" \
-                    fill = \"black\" font-family = \"arial\"> loc%d </text>\n",
-                    cl / 2, cl * (i + 1) + cl / 3,
-                    cl / 2, cl * (i + 1) + cl / 3, i);
+                    fill = \"black\" font-family = \"arial\">%d</text>\n",
+                    cl / 2, cl * (i + 1) + cl / 4,
+                    cl / 2, cl * (i + 1) + cl / 4, i);
+
     // locale lines
-    fprintf(timeline, "<line x1=\"%dpx\" y1 = \"%dpx\" x2 = \"%dpx\" y2 = \"%dpx\" \
-                    style=\"stroke:black;stroke-width:1\"/>\n",
-                    50, cl * (i + 1), 750, cl * (i + 1));
+    fprintf(timeline, "<line x1=\"%dpx\" y1 = \"%dpx\" \
+                      x2 = \"%dpx\" y2 = \"%dpx\" \
+                      style=\"stroke:black;stroke-width:1\"/>\n",
+                      50, cl * (i + 1), 750, cl * (i + 1));
+
     // locale lines tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"16px\"> %d </text>\n",
+                    fill = \"black\" font-family = \"arial\" \
+                    font-size = \"16px\"> %d </text>\n",
                     6, cl * (i + 1) + 6, i);
     // operation tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"14px\"> get </text>\n",
+                    fill = \"black\" font-family = \"arial\" \
+                    font-size = \"14px\"> get </text>\n",
                     30, cl * (i + 1) - 2);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"14px\"> put </text>\n",
+                    fill = \"black\" font-family = \"arial\" \
+                    font-size = \"14px\"> put </text>\n",
                     30, cl * (i + 1) + 11);
 
 
@@ -236,14 +239,16 @@ int main(int argc, char** argv)
 
       if((ops[i][j].get && ops[i][j].put) != 1) // CHECK later !!
         // 0 put and 0 get fields
-        fprintf(matrix, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
+        fprintf(matrix, "<rect x = \"%d\" y = \"%d\" \
+                         width = \"%d\" height = \"%d\" \
                          style = \"fill:grey\"/>\n",
                          cl / 2 + cl * i + 5, cl / 2 + cl * j + 5, cl , cl);
       else{
         // Get ops field
         col = br - ((float)ops[i][j].get / numgets) * br;
         fprintf(matrix, "<polygon points=\"%d,%d %d,%d, %d,%d\" \
-                        style = \"fill:rgb(%d,255,%d);stroke:black;stroke-width:1\"/>\n",
+                        style = \"fill:rgb(%d,255,%d); \
+                        stroke:black;stroke-width:1\"/>\n",
                         cl / 2 + cl * i + 5, cl / 2 + cl * j + 5,
                         cl / 2 + cl * i + 5, cl / 2 + cl * (j + 1) + 5,
                         cl / 2 + cl * (i + 1) + 5, cl / 2 + cl * j + 5,
@@ -270,21 +275,22 @@ int main(int argc, char** argv)
     }
   }
   // Timeline annotation
-  fprintf(timeline, "<text x = \"15\" y = \"37\" \
-                   transform = \"rotate(310 15, 37)\" \
-                   fill = \"black\" font-family:arial\
+  fprintf(timeline, "<text x = \"15\" y = \"39\" \
+                   transform = \"rotate(270 15, 39)\" \
+                   fill = \"black\" style=\"font-family:arial\" \
                    font-size=\"12\">locale</text>\n",
                    cl * (i + 1) + cl / 3, i);
 
-  fprintf(timeline, "<text x = \"30\" y = \"37\" \
-                   transform = \"rotate(310 30, 37)\" \
-                   fill = \"black\" font-family:arial\
-                   font-size=\"12\">operation</text>\n",
+  fprintf(timeline, "<text x = \"42\" y = \"39\" \
+                   transform = \"rotate(270 42, 39)\" \
+                   fill = \"black\" style=\"font-family:arial\" \
+                   font-size=\"12\">oper</text>\n",
                    cl * (i + 1) + cl / 3, i);
 
   fprintf(timeline, "<text x = \"250\" y = \"20\" \
-                   fill = \"black\" font-family:arial\
-                   font-size=\"12\">Program execution(exchanges between locales are colored)</text>\n",
+                   fill = \"black\" font-size=\"12\" \
+                   style=\"font-family:arial\" \
+                   >Program execution(exchanges between locales are colored)</text>\n",
                    cl * (i + 1) + cl / 3, i);
 
   for(i = 0; i < m_size; ++i){
@@ -300,7 +306,7 @@ int main(int argc, char** argv)
                       70, cl * numlocs + 55 + 30 * i , modules[i]);
 
   }
-
+  // program execution info
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     Program was running for %.3f s; </text>\n",
@@ -321,7 +327,18 @@ int main(int argc, char** argv)
                     it was running for %f s (%f%% of time).</text>\n",
                     250, cl * numlocs + 127,
                     max_op->exec, (max_op->exec / end_time) * 100);
+  // Matrix annotation
+  fprintf(matrix, "<text x = \"%d\" y = \"11\" \
+                  fill = \"black\" font-family = \"arial\"> \
+                  Locales-senders </text>\n", (cl * numlocs) / 2 - 30, i);
 
+  fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
+                  transform = \"rotate(270 %d, %d)\" \
+                  style=\"writing-mode: tb\" \
+                  fill = \"black\" font-family = \"arial\" \
+                  >Locales-receivers</text>\n",
+                  cl / 3 - 5, (cl * numlocs) / 2 + 80,
+                  cl / 3 - 5, (cl * numlocs) / 2 + 80, i);
 
   // Net
   for(i = 0; i < numlocs + 1; ++i)
