@@ -53,8 +53,10 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
 {
   struct timeval st, fin;
   double time_from_st, op_time;
+  char f_name[20];
+  sprintf(f_name, "results/chpl_comm_get%d", chpl_localeID);
   FILE *f;
-  f = fopen("results/chpl_comm_get", "a");
+  f = fopen(f_name, "a");
   gettimeofday(&st, NULL);
   __real_chpl_comm_get(addr, locale, raddr, elemSize,
 		       typeIndex, len, ln, fn);
@@ -63,7 +65,7 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
   op_time += (fin.tv_usec - st.tv_usec) * 0.000001;
   time_from_st = st.tv_sec - prog_start.tv_sec;
   time_from_st += (st.tv_usec - prog_start.tv_usec) * 0.000001;
-  fprintf(f, "%d %d get %lf s, %.3lf s from init, %s\n",
+  fprintf(f, "%d %d get %lf %.3lf %s\n",
 	  chpl_localeID, locale, op_time, time_from_st, fn);
   fclose(f);
   return;
@@ -79,8 +81,10 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
 {
   struct timeval st, fin;
   double time_from_st, op_time;
+  char f_name[20];
+  sprintf(f_name, "results/chpl_comm_put%d", chpl_localeID);
   FILE* f;
-  f = fopen("results/chpl_comm_put", "a");
+  f = fopen(f_name, "a");
   gettimeofday(&st, NULL);
   __real_chpl_comm_put(addr, locale, raddr, elemSize,
                        typeIndex, len, ln, fn);
@@ -89,9 +93,8 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
   op_time += (fin.tv_usec - st.tv_usec) * 0.000001;
   time_from_st = st.tv_sec - prog_start.tv_sec;
   time_from_st += (st.tv_usec - prog_start.tv_usec) * 0.000001;
-  fprintf(f, "%d %d put %lf s, %.3lf s from init, %s\n",
+  fprintf(f, "%d %d put %lf %.3lf %s\n",
           chpl_localeID, locale, op_time, time_from_st, fn);
-
   fclose(f);
   return;
 }

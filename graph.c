@@ -2,7 +2,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define cl 60
+#define cl 50
 #define br 200
 
 typedef struct op{
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
   fprintf(graph, "  node [height = 1, width = 1.4];\n");
 
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 70);
+  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 80);
 
   while(1){
     fscanf(f, "%s", info);
@@ -83,15 +83,15 @@ int main(int argc, char** argv)
       break;
 
     ac->from = atoi(info);
-    fprintf(graph, "  loc%s -> ", info);
+//  fprintf(graph, "  loc%s -> ", info);
     fscanf(f, "%s", to);
     ac->to = atoi(to);
-    fprintf(graph, "loc%s ", to);
+//  fprintf(graph, "loc%s ", to);
     fscanf(f, "%s", comm_op);
-    fprintf(graph, "[ label = \"%s\" ];\n", comm_op);
+//  fprintf(graph, "[ label = \"%s\" ];\n", comm_op);
     fscanf(f, "%s", buf);
     ac->exec = atof(buf);
-    ops_time += ac->exec;  // Gathering about all comm ops exec time summed
+    ops_time += ac->exec;
     fscanf(f, "%s", buf);
     ac->time = atof(buf);
     fscanf(f, "%s", buf);
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     strcpy(ac->module, buf);
 
     if(ac->exec > max_op->exec){
-      max_op->exec = ac->exec; // Looking for the longest comm op
+      max_op->exec = ac->exec;
       max_op->time = ac->time;
       strcpy(max_op->module, buf);
       strcpy(max_op->op, comm_op);
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
-                        style=\"stroke:grey;\"/>\n",
+                        style=\"stroke:rgb(180, 180, 180);\"/>\n",
                         (int)((750 * ac->time) / end_time) + rect_width / 2,
                         (ac->from < ac->to ? cl * (ac->from + 1): cl * (ac->from + 1) - 20 ),
                         (int)((750 * ac->time) / end_time) + rect_width / 2,
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
-                        style=\"stroke:grey;stroke-width:1\"/>\n",
+                        style=\"stroke:rgb(180, 180, 180);\"/>\n",
                         (int)((750 * ac->time) / end_time) + rect_width / 2,
                         (ac->from > ac->to? cl * (ac->from + 1):  cl * (ac->from + 1) + 20),
                         (int)((750 * ac->time) / end_time) + rect_width / 2,
@@ -194,8 +194,6 @@ int main(int argc, char** argv)
   }
 
   fclose(f);
-  fprintf(graph, "}\n");
-  fclose(graph);
 
   head(matrix);
   fprintf(matrix, "height = \"%dpx\" width = \"%dpx\">",
@@ -218,9 +216,9 @@ int main(int argc, char** argv)
                     50, cl * (i + 1), 750, cl * (i + 1));
     // locale lines tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
-                    fill = \"black\" font-family = \"arial\" font-size = \"16px\"> loc%d </text>\n",
-                    -1, cl * (i + 1) + 6, i);
-
+                    fill = \"black\" font-family = \"arial\" font-size = \"16px\"> %d </text>\n",
+                    6, cl * (i + 1) + 6, i);
+    // operation tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\" font-size = \"14px\"> get </text>\n",
                     30, cl * (i + 1) - 2);
@@ -231,6 +229,10 @@ int main(int argc, char** argv)
 
 
     for(j = 0; j < numlocs; ++j){
+      if(ops[i][j].get != 0)
+        fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\" ];\n", i, j, ops[i][j].get);
+      if(ops[i][j].put != 0)
+        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\" ];\n", i, j, ops[i][j].put);
 
       if((ops[i][j].get && ops[i][j].put) != 1) // CHECK later !!
         // 0 put and 0 get fields
@@ -268,6 +270,23 @@ int main(int argc, char** argv)
     }
   }
   // Timeline annotation
+  fprintf(timeline, "<text x = \"15\" y = \"37\" \
+                   transform = \"rotate(310 15, 37)\" \
+                   fill = \"black\" font-family:arial\
+                   font-size=\"12\">locale</text>\n",
+                   cl * (i + 1) + cl / 3, i);
+
+  fprintf(timeline, "<text x = \"30\" y = \"37\" \
+                   transform = \"rotate(310 30, 37)\" \
+                   fill = \"black\" font-family:arial\
+                   font-size=\"12\">operation</text>\n",
+                   cl * (i + 1) + cl / 3, i);
+
+  fprintf(timeline, "<text x = \"250\" y = \"20\" \
+                   fill = \"black\" font-family:arial\
+                   font-size=\"12\">Program execution(exchanges between locales are colored)</text>\n",
+                   cl * (i + 1) + cl / 3, i);
+
   for(i = 0; i < m_size; ++i){
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
                     style = \"fill:rgb(%d, %d, %d)\"/>\n",
@@ -319,8 +338,11 @@ int main(int argc, char** argv)
     }
 
   fprintf(timeline, "</svg>");
+  fclose(timeline);
   fprintf(matrix, "</svg>");
   fclose(matrix);
+  fprintf(graph, "}\n");
+  fclose(graph);
 
   for(i = 0; i < numlocs; ++i)
     free(ops[i]);
