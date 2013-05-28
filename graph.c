@@ -44,7 +44,8 @@ char* get_name(char* str)
 int main(int argc, char** argv)
 {
   int numlocs, numgets = 0, rect_width, numputs = 0,
-      i, j, col = 0, m_size = 0, found = 0, WIDTH;
+      w_found = 0, i, j, col = 0, us_loc_found = 0,
+      m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0;
   char info[100], to[100], comm_op[100],
        buf[100], **modules = NULL, **m_temp;
   float end_time, ops_time = 0.0;
@@ -61,25 +62,51 @@ int main(int argc, char** argv)
   max_op = (action *)malloc(sizeof(action));
   oper **ops;
 
-  if(argc == 1)
-    WIDTH = 900;
-  else
-    WIDTH = atoi(argv[1]);
-
   fscanf(nl, "%s", info);
   numlocs = atoi(info);
   fscanf(nl, "%s", info);
   end_time = atof(info);
   fclose(nl);
 
+  us_loc = (int *)malloc(numlocs * sizeof(int));
   ops = (oper **)malloc(numlocs * sizeof(oper *));
-  for(i = 0; i < numlocs; i++)
+
+  for(i = 0; i < numlocs; ++i){
+    us_loc[i] = -1;
     ops[i] = (oper *)malloc(numlocs * sizeof(oper));
-  for(i = 0; i < numlocs; i++)
+  }
+
+  for(i = 0; i < numlocs; i++){
     for(j = 0; j < numlocs; j++){
       ops[i][j].put = 0;
       ops[i][j].get = 0;
     }
+  }
+  //parsung command line options
+  if(argc > 1){
+    for(i = 1; i < argc; ++i){
+      if(!strcmp(argv[i], "-w")){
+        WIDTH = atoi(argv[i + 1]);
+      }
+
+      if(!strcmp(argv[i], "-l")){
+        us_loc_found = 1;
+        while(i < argc - 1){
+          if(!strcmp(argv[i], "-w")){
+            w_found = 1;
+            break;
+          }
+          us_loc[k] = atoi(argv[i + 1]);
+          ++k; ++i;
+        }
+
+        if(w_found == 1){
+          WIDTH = atoi(argv[i + 1]);
+        }
+      }
+    }
+  }
+
   fprintf(graph, "digraph gr{\n");
   fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
 
@@ -243,11 +270,6 @@ int main(int argc, char** argv)
 
 
     for(j = 0; j < numlocs; ++j){
-      if(ops[i][j].get != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \
-                \"get,%d\", fontsize = 20];\n", i, j, ops[i][j].get);
-      if(ops[i][j].put != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", fontsize = 20];\n", i, j, ops[i][j].put);
 
       if((ops[i][j].get && ops[i][j].put) != 1) // CHECK later !!
         // 0 put and 0 get fields
@@ -363,8 +385,18 @@ int main(int argc, char** argv)
                       style=\"stroke:black;stroke-width:1\"/>\n",
                       CL / 2 + CL * i + 5, CL / 2 + 5,
                       CL / 2+ CL* i + 5 ,CL / 2 + 5 + CL * numlocs);
-
     }
+
+  for(i = 0; i < numlocs; ++i){
+    for(j = 0; j < numlocs; ++j){
+      if(ops[i][j].get != 0)
+        fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
+                       fontsize = 20];\n", i, j, ops[i][j].get);
+      if(ops[i][j].put != 0)
+        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
+                       fontsize = 20];\n", i, j, ops[i][j].put);
+    }
+  }
 
   fprintf(timeline, "</svg>");
   fclose(timeline);
