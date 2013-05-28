@@ -2,8 +2,8 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define cl 50
-#define br 200
+#define CL 50
+#define BR 180
 
 typedef struct op{
   int get;
@@ -43,26 +43,35 @@ char* get_name(char* str)
 
 int main(int argc, char** argv)
 {
-  int numlocs, i, j, numgets = 0, rect_width,
-      numputs = 0, col = 0, m_size = 0, found = 0;
+  int numlocs, numgets = 0, rect_width, numputs = 0,
+      i, j, col = 0, m_size = 0, found = 0, WIDTH;
   char info[100], to[100], comm_op[100],
        buf[100], **modules = NULL, **m_temp;
   float end_time, ops_time = 0.0;
-  action *ac, *max_op;
-  ac = (action *)malloc(sizeof(action));
-  max_op = (action *)malloc(sizeof(action));
+
   FILE *f, *graph, *nl, *matrix, *timeline;
-  oper **ops;
   f = fopen("results/m", "r");
   graph = fopen("results/graph.gv", "w");
   nl = fopen("results/info", "r");
   matrix = fopen("results/matrix.html", "w");
   timeline = fopen("results/timeline.html", "w");
+
+  action *ac, *max_op;
+  ac = (action *)malloc(sizeof(action));
+  max_op = (action *)malloc(sizeof(action));
+  oper **ops;
+
+  if(argc == 1)
+    WIDTH = 900;
+  else
+    WIDTH = atoi(argv[1]);
+
   fscanf(nl, "%s", info);
   numlocs = atoi(info);
   fscanf(nl, "%s", info);
   end_time = atof(info);
   fclose(nl);
+
   ops = (oper **)malloc(numlocs * sizeof(oper *));
   for(i = 0; i < numlocs; i++)
     ops[i] = (oper *)malloc(numlocs * sizeof(oper));
@@ -75,7 +84,8 @@ int main(int argc, char** argv)
   fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
 
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"765px\">\n", cl * (numlocs + 1) + 100);
+  fprintf(timeline, "height = \"%dpx\" width = \"%dpx\">\n",
+                    CL * (numlocs + 1) + 100, WIDTH);
 
   while(1){
     fscanf(f, "%s", info);
@@ -126,109 +136,110 @@ int main(int argc, char** argv)
       }
     }
     found = 0;
-    rect_width = ((ac->exec / end_time) * 750 < 1?
-                 (int)((ac->exec / end_time) * 750) + 2:
-                 (int)((ac->exec / end_time) * 750));
+    rect_width = ((ac->exec / end_time) * (WIDTH - 55) < 1?
+                 (int)((ac->exec / end_time) * (WIDTH - 55)) + 2:
+                 (int)((ac->exec / end_time) * (WIDTH - 55)));
     // Drawing timeline elements
     if(!strcmp(comm_op, "get")){
       ops[ atoi(info) ][ atoi(to) ].get++;
       numgets++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                         (int)((750 * ac->time) / end_time), cl * (ac->from + 1) - 20,
-                         rect_width,
+                         (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
+                         CL * (ac->from + 1) - 20, rect_width,
                          ac->module[7 % strlen(ac->module)],
                          ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:rgb(180, 180, 180);\"/>\n",
-                        (int)((750 * ac->time) / end_time) + rect_width / 2,
-                        (ac->from < ac->to ? cl * (ac->from + 1): cl * (ac->from + 1) - 20 ),
-                        (int)((750 * ac->time) / end_time) + rect_width / 2,
-                        cl * (ac->to + 1));
+                        (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
+                        (ac->from < ac->to ? CL * (ac->from + 1): CL * (ac->from + 1) - 20 ),
+                        (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
+                        CL * (ac->to + 1));
     }
     else{
       ops[ atoi(info) ][ atoi(to) ].put++;
       numputs++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
                          height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                         (int)((750 * ac->time) / end_time), cl * (ac->from + 1),
-                         rect_width,
+                         (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
+                         CL * (ac->from + 1), rect_width,
                          ac->module[7 % strlen(ac->module)],
                          ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
       fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:rgb(180, 180, 180);\"/>\n",
-                        (int)((750 * ac->time) / end_time) + rect_width / 2,
-                        (ac->from > ac->to? cl * (ac->from + 1):  cl * (ac->from + 1) + 20),
-                        (int)((750 * ac->time) / end_time) + rect_width / 2,
-                        cl * (ac->to + 1));
+                        (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
+                        (ac->from > ac->to? CL * (ac->from + 1):  CL * (ac->from + 1) + 20),
+                        (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
+                        CL * (ac->to + 1));
     }
   }
-  rect_width = ((max_op->exec / end_time) * 750 < 1?
-               (int)((max_op->exec / end_time) * 750) + 2:
-               (int)((max_op->exec / end_time) * 750));
+  rect_width = ((max_op->exec / end_time) * (WIDTH - 55) < 1?
+               (int)((max_op->exec / end_time) * (WIDTH - 55)) + 2:
+               (int)((max_op->exec / end_time) * (WIDTH - 55)));
 
+  //longest operation
   if(!strcmp(max_op->op, "get")){
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
-                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
-                      (max_op->from < max_op->to ? cl * (max_op->from + 1):
-                      cl * (max_op->from + 1) - 20 ),
-                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
-                      cl * (max_op->to + 1));
+                      (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
+                      (max_op->from < max_op->to ? CL * (max_op->from + 1):
+                      CL * (max_op->from + 1) - 20 ),
+                      (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
+                      CL * (max_op->to + 1));
   }
   else{
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
-                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
-                      (max_op->from > max_op->to? cl * (max_op->from + 1):
-                      cl * (max_op->from + 1) + 20),
-                      (int)((750 * max_op->time) / end_time) + rect_width / 2,
-                      cl * (max_op->to + 1));
+                      (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
+                      (max_op->from > max_op->to? CL * (max_op->from + 1):
+                      CL * (max_op->from + 1) + 20),
+                      (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
+                      CL * (max_op->to + 1));
   }
 
   fclose(f);
 
   head(matrix);
   fprintf(matrix, "height = \"%dpx\" width = \"%dpx\">",
-                  cl * (numlocs + 1) - 15, cl * numlocs + 40);
+                  CL * (numlocs + 1) - 15, CL * numlocs + 40);
 
   for(i = 0; i < numlocs; ++i){
     // Senders tags
     fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\">%d</text>\n",
-                    (i + 1) * cl, cl / 2, i);
+                    (i + 1) * CL, CL / 2, i);
     // Recievers tags
     fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                     transform = \"rotate(270 %d, %d)\" \
                     fill = \"black\" font-family = \"arial\">%d</text>\n",
-                    cl / 2, cl * (i + 1) + cl / 4,
-                    cl / 2, cl * (i + 1) + cl / 4, i);
+                    CL / 2, CL * (i + 1) + CL / 4,
+                    CL / 2, CL * (i + 1) + CL / 4, i);
 
     // locale lines
     fprintf(timeline, "<line x1=\"%dpx\" y1 = \"%dpx\" \
                       x2 = \"%dpx\" y2 = \"%dpx\" \
                       style=\"stroke:black;stroke-width:1\"/>\n",
-                      50, cl * (i + 1), 750, cl * (i + 1));
+                      50, CL * (i + 1), (WIDTH - 5), CL * (i + 1));
 
     // locale lines tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\" \
                     font-size = \"16px\"> %d </text>\n",
-                    6, cl * (i + 1) + 6, i);
+                    6, CL * (i + 1) + 6, i);
     // operation tags
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\" \
                     font-size = \"14px\"> get </text>\n",
-                    30, cl * (i + 1) - 2);
+                    30, CL * (i + 1) - 2);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     fill = \"black\" font-family = \"arial\" \
                     font-size = \"14px\"> put </text>\n",
-                    30, cl * (i + 1) + 11);
+                    30, CL * (i + 1) + 11);
 
 
     for(j = 0; j < numlocs; ++j){
@@ -243,35 +254,35 @@ int main(int argc, char** argv)
         fprintf(matrix, "<rect x = \"%d\" y = \"%d\" \
                          width = \"%d\" height = \"%d\" \
                          style = \"fill:grey\"/>\n",
-                         cl / 2 + cl * i + 5, cl / 2 + cl * j + 5, cl , cl);
+                         CL / 2 + CL * i + 5, CL / 2 + CL * j + 5, CL , CL);
       else{
         // Get ops field
-        col = br - ((float)ops[i][j].get / numgets) * br;
+        col = BR - ((float)ops[i][j].get / numgets) * BR;
         fprintf(matrix, "<polygon points=\"%d,%d %d,%d, %d,%d\" \
                         style = \"fill:rgb(%d,255,%d); \
                         stroke:black;stroke-width:1\"/>\n",
-                        cl / 2 + cl * i + 5, cl / 2 + cl * j + 5,
-                        cl / 2 + cl * i + 5, cl / 2 + cl * (j + 1) + 5,
-                        cl / 2 + cl * (i + 1) + 5, cl / 2 + cl * j + 5,
+                        CL / 2 + CL * i + 5, CL / 2 + CL * j + 5,
+                        CL / 2 + CL * i + 5, CL / 2 + CL * (j + 1) + 5,
+                        CL / 2 + CL * (i + 1) + 5, CL / 2 + CL * j + 5,
                         col, col);
         // Get ops text
         fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                         style=\"fill:black;font-family:arial\"> %d </text>\n",
-                        cl / 2 + cl * i + cl / 4 ,
-                        cl / 2 + cl * j + cl / 4 + cl / 6, ops[i][j].get);
+                        CL / 2 + CL * i + CL / 4 ,
+                        CL / 2 + CL * j + CL / 4 + CL / 6, ops[i][j].get);
         // Put ops field
-        col = br - ((float)ops[i][j].put / numputs) * br;
+        col = BR - ((float)ops[i][j].put / numputs) * BR;
 	fprintf(matrix, "<polygon points=\"%d,%d %d,%d, %d,%d\" \
                        	style = \"fill:rgb(255,%d,%d);stroke:black;stroke-width:1\"/>\n",
-                        cl / 2 + cl * (i + 1) + 5, cl / 2 + cl * (j + 1) + 5,
-                        cl / 2 + cl * i + 5, cl / 2 + cl * (j + 1) + 5,
-                        cl / 2 + cl * (i + 1) + 5, cl / 2 + cl * j + 5,
+                        CL / 2 + CL * (i + 1) + 5, CL / 2 + CL * (j + 1) + 5,
+                        CL / 2 + CL * i + 5, CL / 2 + CL * (j + 1) + 5,
+                        CL / 2 + CL * (i + 1) + 5, CL / 2 + CL * j + 5,
                         col, col);
         // Put ops text
         fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                         style = \"fill:black;font-family:arial\"> %d </text>\n",
-                        cl / 2 + cl * i + cl / 2 + cl / 5,
-                       	cl + cl * j + cl / 4 + cl / 6, ops[i][j].put);
+                        CL / 2 + CL * i + CL / 2 + CL / 5,
+                       	CL + CL * j + CL / 4 + CL / 6, ops[i][j].put);
       }
     }
   }
@@ -280,78 +291,78 @@ int main(int argc, char** argv)
                    transform = \"rotate(270 15, 39)\" \
                    fill = \"black\" style=\"font-family:arial\" \
                    font-size=\"12\">locale</text>\n",
-                   cl * (i + 1) + cl / 3, i);
+                   CL * (i + 1) + CL / 3, i);
 
   fprintf(timeline, "<text x = \"42\" y = \"39\" \
                    transform = \"rotate(270 42, 39)\" \
                    fill = \"black\" style=\"font-family:arial\" \
                    font-size=\"12\">oper</text>\n",
-                   cl * (i + 1) + cl / 3, i);
+                   CL * (i + 1) + CL / 3, i);
 
   fprintf(timeline, "<text x = \"250\" y = \"20\" \
                    fill = \"black\" font-size=\"12\" \
                    style=\"font-family:arial\" \
                    >Program execution(exchanges between locales are colored)</text>\n",
-                   cl * (i + 1) + cl / 3, i);
+                   CL * (i + 1) + CL / 3, i);
 
   for(i = 0; i < m_size; ++i){
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
                     style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                    40, cl * numlocs + 40 + 30 * i, 20, 20,
+                    40, CL * numlocs + 40 + 30 * i, 20, 20,
                     modules[i][7 % strlen(modules[i])],
                     modules[i][strlen(modules[i]) - 7],
                     modules[i][(strlen(modules[i]) - 1) / 2]);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                       style = \"fill:black;font-family:arial\"> %s </text>\n",
-                      70, cl * numlocs + 55 + 30 * i , modules[i]);
+                      70, CL * numlocs + 55 + 30 * i , modules[i]);
 
   }
   // program execution info
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     Program was running for %.3f s; </text>\n",
-                    250, cl * numlocs + 55 , end_time);
+                    250, CL * numlocs + 55 , end_time);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     comm ops were running for %.3f s (%.2f%% of time); </text>\n",
-                    250, cl * numlocs + 79 , ops_time, (ops_time / end_time) * 100);
+                    250, CL * numlocs + 79 , ops_time, (ops_time / end_time) * 100);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     the longest op was initiated by %s module;</text>\n",
-                    250, cl * numlocs + 103, max_op->module);
+                    250, CL * numlocs + 103, max_op->module);
 
   fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                     style = \"fill:black;font-family:arial\"> \
                     it was running for %f s (%f%% of time).</text>\n",
-                    250, cl * numlocs + 127,
+                    250, CL * numlocs + 127,
                     max_op->exec, (max_op->exec / end_time) * 100);
   // Matrix annotation
   fprintf(matrix, "<text x = \"%d\" y = \"11\" \
                   fill = \"black\" font-family = \"arial\"> \
-                  Locales-senders </text>\n", (cl * numlocs) / 2 - 30, i);
+                  Locales-senders </text>\n", (CL * numlocs) / 2 - 30, i);
 
   fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                   transform = \"rotate(270 %d, %d)\" \
                   style=\"writing-mode: tb\" \
                   fill = \"black\" font-family = \"arial\" \
                   >Locales-receivers</text>\n",
-                  cl / 3 - 5, (cl * numlocs) / 2 + 80,
-                  cl / 3 - 5, (cl * numlocs) / 2 + 80, i);
+                  CL / 3 - 5, (CL * numlocs) / 2 + 80,
+                  CL / 3 - 5, (CL * numlocs) / 2 + 80, i);
 
   // Net
   for(i = 0; i < numlocs + 1; ++i)
     for(j = 0; j < numlocs + 1; ++j){
       fprintf(matrix, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:black;stroke-width:1\"/>\n",
-                      cl / 2 + 5, cl / 2 + cl * i + 5,
-                      cl / 2 + 5 + cl * numlocs, cl / 2+ cl* i + 5);
+                      CL / 2 + 5, CL / 2 + CL * i + 5,
+                      CL / 2 + 5 + CL * numlocs, CL / 2+ CL* i + 5);
       fprintf(matrix, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:black;stroke-width:1\"/>\n",
-                      cl / 2 + cl * i + 5, cl / 2 + 5,
-                      cl / 2+ cl* i + 5 ,cl / 2 + 5 + cl * numlocs);
+                      CL / 2 + CL * i + 5, CL / 2 + 5,
+                      CL / 2+ CL* i + 5 ,CL / 2 + 5 + CL * numlocs);
 
     }
 
