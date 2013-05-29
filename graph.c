@@ -5,12 +5,13 @@
 #define CL 50
 #define BR 180
 
-typedef struct op{
+typedef struct{
   int get;
   int put;
+  char show;
 }oper;
 
-typedef struct act{
+typedef struct{
   int from;
   int to;
   char module[20];
@@ -80,14 +81,14 @@ int main(int argc, char** argv)
   for(i = 0; i < numlocs; ++i){
     us_loc[i] = numlocs + 1;
     ops[i] = (oper *)malloc(numlocs * sizeof(oper));
-  }
 
-  for(i = 0; i < numlocs; i++){
     for(j = 0; j < numlocs; j++){
       ops[i][j].put = 0;
       ops[i][j].get = 0;
+      ops[i][j].show = 0;
     }
   }
+
   //parsung command line options
   if(argc > 1){
     for(i = 1; i < argc; ++i){
@@ -110,8 +111,19 @@ int main(int argc, char** argv)
       }
     }
   }
-
   qsort(us_loc, numlocs, sizeof(int), comp);
+
+  if(us_loc_count > 0){
+    for(i = 0; i < numlocs; ++i)
+      for(j = 0; j < numlocs; ++j)
+        if((us_loc[j] < numlocs) && (us_loc[i] < numlocs))
+          ops[us_loc[i]][us_loc[j]].show = 1;
+  }
+  else{
+    for(i = 0; i < numlocs; ++i)
+      for(j = 0; j < numlocs; ++j)
+        ops[i][j].show = 1;
+  }
 
   fprintf(graph, "digraph gr{\n");
   fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
@@ -146,7 +158,7 @@ int main(int argc, char** argv)
       max_op->from = ac->from;
       max_op->to = ac->to;
     }
-
+    // Creating array of modules names
     if(modules == NULL){
       modules = (char **)malloc(sizeof(char*));
       modules[0] = (char *)malloc(sizeof(buf));
@@ -173,7 +185,7 @@ int main(int argc, char** argv)
                  (int)((ac->exec / end_time) * (WIDTH - 55)) + 2:
                  (int)((ac->exec / end_time) * (WIDTH - 55)));
     // Drawing timeline elements
-    if(!strcmp(comm_op, "get")){
+    if(!strcmp(comm_op, "get") && ops[atoi(info)][atoi(to)].show == 1){
       ops[ atoi(info) ][ atoi(to) ].get++;
       numgets++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
@@ -191,7 +203,7 @@ int main(int argc, char** argv)
                         (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
                         CL * (ac->to + 1));
     }
-    else{
+    if(!strcmp(comm_op, "put") && ops[atoi(info)][atoi(to)].show == 1){
       ops[ atoi(info) ][ atoi(to) ].put++;
       numputs++;
       fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
@@ -215,7 +227,7 @@ int main(int argc, char** argv)
                (int)((max_op->exec / end_time) * (WIDTH - 55)));
 
   //longest operation
-  if(!strcmp(max_op->op, "get")){
+  if(!strcmp(max_op->op, "get") && (ops[max_op->from][max_op->to].show == 1)){
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
                       (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
@@ -224,7 +236,7 @@ int main(int argc, char** argv)
                       (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
                       CL * (max_op->to + 1));
   }
-  else{
+  if(!strcmp(max_op->op, "put") && (ops[max_op->from][max_op->to].show == 1)){
     fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                       style=\"stroke:red;stroke-width:1\"/>\n",
                       (int)(((WIDTH - 55) * max_op->time) / end_time) + rect_width / 2 + 50,
@@ -277,7 +289,7 @@ int main(int argc, char** argv)
 
     for(j = 0; j < numlocs; ++j){
 
-      if((ops[i][j].get && ops[i][j].put) != 1) // CHECK later !!
+      if((ops[i][j].get && ops[i][j].put) != 1 || ops[i][j].show == 0) // CHECK later !!
         // 0 put and 0 get fields
         fprintf(matrix, "<rect x = \"%d\" y = \"%d\" \
                          width = \"%d\" height = \"%d\" \
@@ -411,8 +423,8 @@ int main(int argc, char** argv)
     for(i = 0; i < us_loc_count; ++i){
       for(j = 0; j < us_loc_count; ++j){
         if((ops[us_loc[i]][us_loc[j]].get == 0) &&
-           (ops[us_loc[i]][us_loc[j]].put == 0))
-             fprintf(graph, "  loc%d;\n  loc%d;", us_loc[i], us_loc[j]);
+          (ops[us_loc[i]][us_loc[j]].put == 0))
+          fprintf(graph, "  loc%d;\n  loc%d;", us_loc[i], us_loc[j]);
 
         if(ops[us_loc[i]][us_loc[j]].get != 0)
           fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
