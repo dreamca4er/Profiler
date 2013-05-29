@@ -19,6 +19,12 @@ typedef struct act{
   float time;
 }action;
 
+int comp (const void * elem1, const void * elem2) {
+  int f = *((int*)elem1);
+  int s = *((int*)elem2);
+  return (f > s) - (f < s);
+}
+
 void head(FILE* f)
 {
   fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
@@ -44,7 +50,7 @@ char* get_name(char* str)
 int main(int argc, char** argv)
 {
   int numlocs, numgets = 0, rect_width, numputs = 0,
-      w_found = 0, i, j, col = 0, us_loc_found = 0,
+      w_found = 0, i, j, col = 0, us_loc_count = 0,
       m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0;
   char info[100], to[100], comm_op[100],
        buf[100], **modules = NULL, **m_temp;
@@ -72,7 +78,7 @@ int main(int argc, char** argv)
   ops = (oper **)malloc(numlocs * sizeof(oper *));
 
   for(i = 0; i < numlocs; ++i){
-    us_loc[i] = -1;
+    us_loc[i] = numlocs + 1;
     ops[i] = (oper *)malloc(numlocs * sizeof(oper));
   }
 
@@ -88,24 +94,24 @@ int main(int argc, char** argv)
       if(!strcmp(argv[i], "-w")){
         WIDTH = atoi(argv[i + 1]);
       }
-
       if(!strcmp(argv[i], "-l")){
-        us_loc_found = 1;
         while(i < argc - 1){
-          if(!strcmp(argv[i], "-w")){
+          if(!strcmp(argv[i + 1], "-w")){
             w_found = 1;
             break;
           }
           us_loc[k] = atoi(argv[i + 1]);
-          ++k; ++i;
+          us_loc_count++;
+          k++; i++;
         }
-
         if(w_found == 1){
           WIDTH = atoi(argv[i + 1]);
         }
       }
     }
   }
+
+  qsort(us_loc, numlocs, sizeof(int), comp);
 
   fprintf(graph, "digraph gr{\n");
   fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
@@ -328,6 +334,7 @@ int main(int argc, char** argv)
                    CL * (i + 1) + CL / 3, i);
 
   for(i = 0; i < m_size; ++i){
+
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
                     style = \"fill:rgb(%d, %d, %d)\"/>\n",
                     40, CL * numlocs + 40 + 30 * i, 20, 20,
@@ -368,7 +375,6 @@ int main(int argc, char** argv)
 
   fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                   transform = \"rotate(270 %d, %d)\" \
-                  style=\"writing-mode: tb\" \
                   fill = \"black\" font-family = \"arial\" \
                   >Locales-receivers</text>\n",
                   CL / 3 - 5, (CL * numlocs) / 2 + 80,
@@ -387,14 +393,37 @@ int main(int argc, char** argv)
                       CL / 2+ CL* i + 5 ,CL / 2 + 5 + CL * numlocs);
     }
 
-  for(i = 0; i < numlocs; ++i){
-    for(j = 0; j < numlocs; ++j){
-      if(ops[i][j].get != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
-                       fontsize = 20];\n", i, j, ops[i][j].get);
-      if(ops[i][j].put != 0)
-        fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
-                       fontsize = 20];\n", i, j, ops[i][j].put);
+  // Creating graph, before that user
+  // defined locales check
+  if(us_loc_count == 0){
+    for(i = 0; i < numlocs; ++i){
+      for(j = 0; j < numlocs; ++j){
+        if(ops[i][j].get != 0)
+          fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
+                         fontsize = 20];\n", i, j, ops[i][j].get);
+        if(ops[i][j].put != 0)
+          fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
+                         fontsize = 20];\n", i, j, ops[i][j].put);
+      }
+    }
+  }
+  else{
+    for(i = 0; i < us_loc_count; ++i){
+      for(j = 0; j < us_loc_count; ++j){
+        if((ops[us_loc[i]][us_loc[j]].get == 0) &&
+           (ops[us_loc[i]][us_loc[j]].put == 0))
+             fprintf(graph, "  loc%d;\n  loc%d;", us_loc[i], us_loc[j]);
+
+        if(ops[us_loc[i]][us_loc[j]].get != 0)
+          fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
+                       fontsize = 20];\n", us_loc[i], us_loc[j],
+                       ops[us_loc[i]][us_loc[j]].get);
+
+        if(ops[us_loc[i]][us_loc[j]].put != 0)
+          fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
+                       fontsize = 20];\n", us_loc[i], us_loc[j],
+                       ops[us_loc[i]][us_loc[j]].put);
+      }
     }
   }
 
