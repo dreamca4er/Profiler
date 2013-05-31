@@ -407,34 +407,20 @@ int main(int argc, char** argv)
 
   // Creating graph, before that user
   // defined locales check
-  if(us_loc_count == 0){
-    for(i = 0; i < numlocs; ++i){
-      for(j = 0; j < numlocs; ++j){
+  for(i = 0; i < numlocs; ++i){
+    for(j = 0; j < numlocs; ++j){
+      if(ops[i][j].show == 1){
+        if((ops[i][j].get == 0) &&
+          (ops[i][j].put == 0))
+          fprintf(graph, "  loc%d;\n  loc%d;", i, j);
+
         if(ops[i][j].get != 0)
-          fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
-                         fontsize = 20];\n", i, j, ops[i][j].get);
+           fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
+                       fontsize = 20];\n", i, j, ops[i][j].get);
+
         if(ops[i][j].put != 0)
           fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
-                         fontsize = 20];\n", i, j, ops[i][j].put);
-      }
-    }
-  }
-  else{
-    for(i = 0; i < us_loc_count; ++i){
-      for(j = 0; j < us_loc_count; ++j){
-        if((ops[us_loc[i]][us_loc[j]].get == 0) &&
-          (ops[us_loc[i]][us_loc[j]].put == 0))
-          fprintf(graph, "  loc%d;\n  loc%d;", us_loc[i], us_loc[j]);
-
-        if(ops[us_loc[i]][us_loc[j]].get != 0)
-          fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
-                       fontsize = 20];\n", us_loc[i], us_loc[j],
-                       ops[us_loc[i]][us_loc[j]].get);
-
-        if(ops[us_loc[i]][us_loc[j]].put != 0)
-          fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
-                       fontsize = 20];\n", us_loc[i], us_loc[j],
-                       ops[us_loc[i]][us_loc[j]].put);
+                       fontsize = 20];\n",i, j, ops[i][j].put);
       }
     }
   }
