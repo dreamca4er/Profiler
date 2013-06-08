@@ -6,7 +6,7 @@ typedef unsigned long int int32_t;
 typedef const char* chpl_string;
 
 struct timeval prog_end, main_start;
-extern int chpl_localeID, chpl_numLocales;
+extern int chpl_nodeID, chpl_numNodes;
 
 void __real_chpl_comm_init(int *argc_p, char ***argv_p);
 
@@ -15,7 +15,7 @@ void __wrap_chpl_comm_init(int *argc_p, char ***argv_p)
   __real_chpl_comm_init(argc_p, argv_p);
   FILE *f;
   f = fopen("results/info", "w");
-  fprintf(f, "%d\n", chpl_numLocales);
+  fprintf(f, "%d\n", chpl_numNodes);
   fclose(f);
 }
 
@@ -26,7 +26,7 @@ void __wrap_chpl_exit_all(int status)
   FILE *t;
   t = fopen("results/info", "a");
   gettimeofday(&prog_end, NULL);
-  if(chpl_localeID == 0)
+  if(chpl_nodeID == 0)
     fprintf(t, "%.3f\n", prog_end.tv_sec - main_start.tv_sec +
            (prog_end.tv_usec - main_start.tv_usec) * 0.000001);
   fclose(t);
@@ -53,7 +53,7 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
   struct timeval st, fin;
   double time_from_st, op_time;
   char f_name[20];
-  sprintf(f_name, "results/chpl_comm_get%d", chpl_localeID);
+  sprintf(f_name, "results/chpl_comm_get%d", chpl_nodeID);
   FILE *f;
   f = fopen(f_name, "a");
   gettimeofday(&st, NULL);
@@ -65,7 +65,7 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
   time_from_st = st.tv_sec - main_start.tv_sec;
   time_from_st += (st.tv_usec - main_start.tv_usec) * 0.000001;
   fprintf(f, "%d %d get %lf %.3lf %s\n",
-	  chpl_localeID, locale, op_time, time_from_st, fn);
+	  chpl_nodeID, locale, op_time, time_from_st, fn);
   fclose(f);
   return;
 }
@@ -81,7 +81,7 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
   struct timeval st, fin;
   double time_from_st, op_time;
   char f_name[20];
-  sprintf(f_name, "results/chpl_comm_put%d", chpl_localeID);
+  sprintf(f_name, "results/chpl_comm_put%d", chpl_nodeID);
   FILE* f;
   f = fopen(f_name, "a");
   gettimeofday(&st, NULL);
@@ -93,7 +93,7 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
   time_from_st = st.tv_sec - main_start.tv_sec;
   time_from_st += (st.tv_usec - main_start.tv_usec) * 0.000001;
   fprintf(f, "%d %d put %lf %.3lf %s\n",
-          chpl_localeID, locale, op_time, time_from_st, fn);
+          chpl_nodeID, locale, op_time, time_from_st, fn);
   fclose(f);
   return;
 }
