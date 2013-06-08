@@ -50,7 +50,7 @@ char* get_name(char* str)
 
 int main(int argc, char** argv)
 {
-  int numlocs, numgets = 0, rect_width, numputs = 0,
+  int numlocs, numgets = 0, rect_width, numputs = 0, pos,
       w_found = 0, i, j, col = 0, us_loc_count = 0,
       m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0;
   char info[100], to[100], comm_op[100],
@@ -58,6 +58,7 @@ int main(int argc, char** argv)
   float end_time, ops_time = 0.0;
 
   FILE *f, *graph, *nl, *matrix, *timeline;
+  fpos_t position_height, position_last;
   f = fopen("results/m", "r");
   graph = fopen("results/graph.gv", "w");
   nl = fopen("results/info", "r");
@@ -127,11 +128,9 @@ int main(int argc, char** argv)
 
   fprintf(graph, "digraph gr{\n");
   fprintf(graph, "  node [height = 1, width = 1, fontsize=28];\n");
-
   head(timeline);
-  fprintf(timeline, "height = \"%dpx\" width = \"%dpx\">\n",
-                    CL * (numlocs + 1) + 100, WIDTH);
-
+  pos = ftell(timeline);
+  fprintf(timeline, "                                                      ");
   while(1){
     fscanf(f, "%s", info);
     if(feof(f))
@@ -188,16 +187,16 @@ int main(int argc, char** argv)
     if(!strcmp(comm_op, "get") && ops[atoi(info)][atoi(to)].show == 1){
       ops[ atoi(info) ][ atoi(to) ].get++;
       numgets++;
-      fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
-                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
+      fprintf(timeline, "\n<rect x = \"%d\" y = \"%d\" width = \"%d\" \
+                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>",
                          (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
                          CL * (ac->from + 1) - 20, rect_width,
                          ac->module[7 % strlen(ac->module)],
                          ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
-      fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
-                        style=\"stroke:rgb(180, 180, 180);\"/>\n",
+      fprintf(timeline, "\n<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
+                        style=\"stroke:rgb(180, 180, 180);\"/>",
                         (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
                         (ac->from < ac->to ? CL * (ac->from + 1): CL * (ac->from + 1) - 20 ),
                         (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
@@ -206,16 +205,16 @@ int main(int argc, char** argv)
     if(!strcmp(comm_op, "put") && ops[atoi(info)][atoi(to)].show == 1){
       ops[ atoi(info) ][ atoi(to) ].put++;
       numputs++;
-      fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" \
-                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>\n",
+      fprintf(timeline, "\n<rect x = \"%d\" y = \"%d\" width = \"%d\" \
+                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>",
                          (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
                          CL * (ac->from + 1), rect_width,
                          ac->module[7 % strlen(ac->module)],
                          ac->module[strlen(ac->module) - 7],
                          ac->module[(strlen(ac->module) - 1) / 2]);
 
-      fprintf(timeline, "<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
-                        style=\"stroke:rgb(180, 180, 180);\"/>\n",
+      fprintf(timeline, "\n<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
+                        style=\"stroke:rgb(180, 180, 180);\"/>",
                         (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
                         (ac->from > ac->to? CL * (ac->from + 1):  CL * (ac->from + 1) + 20),
                         (int)(((WIDTH - 55) * ac->time) / end_time) + rect_width / 2 + 50,
@@ -289,7 +288,7 @@ int main(int argc, char** argv)
 
     for(j = 0; j < numlocs; ++j){
 
-      if(((ops[i][j].get == 0) && (ops[i][j].put == 0))|| ops[i][j].show == 0) // CHECK later !!
+      if(((ops[i][j].get == 0) && (ops[i][j].put == 0))|| ops[i][j].show == 0)
         // 0 put and 0 get fields
         fprintf(matrix, "<rect x = \"%d\" y = \"%d\" \
                          width = \"%d\" height = \"%d\" \
@@ -424,7 +423,10 @@ int main(int argc, char** argv)
       }
     }
   }
-
+  fseek(timeline, pos, SEEK_SET);
+  fprintf(timeline, "height = \"%dpx\" width = \"%dpx\">",
+                    CL * numlocs + 40 + 30 * m_size, WIDTH);
+  fseek(timeline, 0, SEEK_END);
   fprintf(timeline, "</svg>");
   fclose(timeline);
   fprintf(matrix, "</svg>");
