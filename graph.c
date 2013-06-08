@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     }
   }
 
-  //parsung command line options
+  //parsing command line options
   if(argc > 1){
     for(i = 1; i < argc; ++i){
       if(!strcmp(argv[i], "-w")){
@@ -289,7 +289,7 @@ int main(int argc, char** argv)
 
     for(j = 0; j < numlocs; ++j){
 
-      if((ops[i][j].get && ops[i][j].put) != 1 || ops[i][j].show == 0) // CHECK later !!
+      if(((ops[i][j].get == 0) && (ops[i][j].put == 0))|| ops[i][j].show == 0) // CHECK later !!
         // 0 put and 0 get fields
         fprintf(matrix, "<rect x = \"%d\" y = \"%d\" \
                          width = \"%d\" height = \"%d\" \
