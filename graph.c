@@ -36,6 +36,18 @@ void head(FILE* f)
   fprintf(f, "xmlns:ev = \"http://www.w3.org/2001/xml-events\" \n");
 }
 
+void create_color(char* name, char* color)
+{
+  int red, green, blue;
+  char result[25];
+  red = ((name[5 % strlen(name)] + name[8 % strlen(name)] +
+         name[9 % strlen(name)]) * strlen(name)) % 255;
+  green = ((name[(2 + strlen(name) / 2) % strlen(name)]) * strlen(name) * 3) % 255;
+  blue = (name[(strlen(name) - 9) % strlen(name)] * strlen(name)) % 255;
+  sprintf(result, "rgb(%d, %d, %d)", red, green, blue);
+  strcpy(color, result);
+}
+
 char* get_name(char* str)
 {
   char* module;
@@ -53,7 +65,7 @@ int main(int argc, char** argv)
   int numlocs, numgets = 0, rect_width, numputs = 0, pos,
       w_found = 0, i, j, col = 0, us_loc_count = 0,
       m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0;
-  char info[100], to[100], comm_op[100],
+  char info[100], to[100], comm_op[100], color[25],
        buf[100], **modules = NULL, **m_temp;
   float end_time, ops_time = 0.0;
 
@@ -183,17 +195,15 @@ int main(int argc, char** argv)
     rect_width = ((ac->exec / end_time) * (WIDTH - 55) < 1?
                  (int)((ac->exec / end_time) * (WIDTH - 55)) + 2:
                  (int)((ac->exec / end_time) * (WIDTH - 55)));
+    create_color(ac->module, color);
     // Drawing timeline elements
     if(!strcmp(comm_op, "get") && ops[atoi(info)][atoi(to)].show == 1){
       ops[ atoi(info) ][ atoi(to) ].get++;
       numgets++;
       fprintf(timeline, "\n<rect x = \"%d\" y = \"%d\" width = \"%d\" \
-                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>",
+                         height = \"20\" style = \"fill:%s\"/>",
                          (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
-                         CL * (ac->from + 1) - 20, rect_width,
-                         ac->module[7 % strlen(ac->module)],
-                         ac->module[strlen(ac->module) - 7],
-                         ac->module[(strlen(ac->module) - 1) / 2]);
+                         CL * (ac->from + 1) - 20, rect_width, color);
 
       fprintf(timeline, "\n<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:rgb(180, 180, 180);\"/>",
@@ -206,12 +216,9 @@ int main(int argc, char** argv)
       ops[ atoi(info) ][ atoi(to) ].put++;
       numputs++;
       fprintf(timeline, "\n<rect x = \"%d\" y = \"%d\" width = \"%d\" \
-                         height = \"20\" style = \"fill:rgb(%d, %d, %d)\"/>",
+                         height = \"20\" style = \"fill:%s\"/>",
                          (int)(((WIDTH - 55) * ac->time) / end_time) + 50,
-                         CL * (ac->from + 1), rect_width,
-                         ac->module[7 % strlen(ac->module)],
-                         ac->module[strlen(ac->module) - 7],
-                         ac->module[(strlen(ac->module) - 1) / 2]);
+                         CL * (ac->from + 1), rect_width, color);
 
       fprintf(timeline, "\n<line x1=\"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" \
                         style=\"stroke:rgb(180, 180, 180);\"/>",
@@ -345,13 +352,10 @@ int main(int argc, char** argv)
                    CL * (i + 1) + CL / 3, i);
 
   for(i = 0; i < m_size; ++i){
-
+    create_color(modules[i], color);
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
-                    style = \"fill:rgb(%d, %d, %d)\"/>\n",
-                    40, CL * numlocs + 40 + 30 * i, 20, 20,
-                    modules[i][7 % strlen(modules[i])],
-                    modules[i][strlen(modules[i]) - 7],
-                    modules[i][(strlen(modules[i]) - 1) / 2]);
+                      style = \"fill:%s\"/>\n",
+                      40, CL * numlocs + 40 + 30 * i, 20, 20, color);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                       style = \"fill:black;font-family:arial\"> %s </text>\n",
