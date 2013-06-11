@@ -35,7 +35,7 @@ void __wrap_chpl_exit_all(int status)
 {
   gettimeofday(&prog_end, NULL);
   if(chpl_nodeID == 0)
-    fprintf(f, "%.3f\n", prog_end.tv_sec - main_start.tv_sec +
+    fprintf(f, "%f\n", prog_end.tv_sec - main_start.tv_sec +
            (prog_end.tv_usec - main_start.tv_usec) * 0.000001);
   fclose(f);
   __real_chpl_exit_all(status);
@@ -66,7 +66,7 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
   op_time_get += (fin_get.tv_usec - st_get.tv_usec) * 0.000001;
   time_from_st_get = st_get.tv_sec - main_start.tv_sec;
   time_from_st_get += (st_get.tv_usec - main_start.tv_usec) * 0.000001;
-  fprintf(comm_get, "%d %d get %lf %.3lf %s\n",
+  fprintf(comm_get, "%d %d get %lf %lf %s\n",
 	  chpl_nodeID, locale, op_time_get, time_from_st_get, fn);
   return;
 }
@@ -87,7 +87,7 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
   op_time_put += (fin_put.tv_usec - st_put.tv_usec) * 0.000001;
   time_from_st_put = st_put.tv_sec - main_start.tv_sec;
   time_from_st_put += (st_put.tv_usec - main_start.tv_usec) * 0.000001;
-  fprintf(comm_put, "%d %d put %lf %.3lf %s\n",
+  fprintf(comm_put, "%d %d put %lf %lf %s\n",
           chpl_nodeID, locale, op_time_put, time_from_st_put, fn);
   return;
 }
