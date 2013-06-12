@@ -7,12 +7,7 @@ typedef const char* chpl_string;
 
 extern int chpl_nodeID, chpl_numNodes;
 
-struct timeval prog_end, main_start,
-       st_get, fin_get, st_put, fin_put;
-
-double time_from_st_get, op_time_get,
-       time_from_st_put, op_time_put;
-
+struct timeval prog_end, main_start;
 FILE *comm_get, *comm_put, *f;
 
 void __real_chpl_comm_init(int *argc_p, char ***argv_p);
@@ -58,16 +53,18 @@ void __wrap_chpl_comm_get(void *addr, int32_t locale, void* raddr,
                           int32_t elemSize, int32_t typeIndex, int32_t len,
                           int ln, chpl_string fn)
 {
-  gettimeofday(&st_get, NULL);
+  double op_time = 0, time_from_st = 0;
+  struct timeval st, fin;
+  gettimeofday(&st, NULL);
   __real_chpl_comm_get(addr, locale, raddr, elemSize,
 		       typeIndex, len, ln, fn);
-  gettimeofday(&fin_get, NULL);
-  op_time_get = fin_get.tv_sec - st_get.tv_sec;
-  op_time_get += (fin_get.tv_usec - st_get.tv_usec) * 0.000001;
-  time_from_st_get = st_get.tv_sec - main_start.tv_sec;
-  time_from_st_get += (st_get.tv_usec - main_start.tv_usec) * 0.000001;
+  gettimeofday(&fin, NULL);
+  op_time = fin.tv_sec - st.tv_sec;
+  op_time += (fin.tv_usec - st.tv_usec) * 0.000001;
+  time_from_st = st.tv_sec - main_start.tv_sec;
+  time_from_st += (st.tv_usec - main_start.tv_usec) * 0.000001;
   fprintf(comm_get, "%d %d get %lf %lf %s\n",
-	  chpl_nodeID, locale, op_time_get, time_from_st_get, fn);
+	  chpl_nodeID, locale, op_time, time_from_st, fn);
   return;
 }
 
@@ -79,16 +76,18 @@ void __wrap_chpl_comm_put(void *addr, int32_t locale, void* raddr,
                           int32_t elemSize, int32_t typeIndex, int32_t len,
                           int ln, chpl_string fn)
 {
-  gettimeofday(&st_put, NULL);
+  double op_time = 0, time_from_st = 0;
+  struct timeval st, fin;
+  gettimeofday(&st, NULL);
   __real_chpl_comm_put(addr, locale, raddr, elemSize,
                        typeIndex, len, ln, fn);
-  gettimeofday(&fin_put, NULL);
-  op_time_put = fin_put.tv_sec - st_put.tv_sec;
-  op_time_put += (fin_put.tv_usec - st_put.tv_usec) * 0.000001;
-  time_from_st_put = st_put.tv_sec - main_start.tv_sec;
-  time_from_st_put += (st_put.tv_usec - main_start.tv_usec) * 0.000001;
+  gettimeofday(&fin, NULL);
+  op_time = fin.tv_sec - st.tv_sec;
+  op_time += (fin.tv_usec - st.tv_usec) * 0.000001;
+  time_from_st = st.tv_sec - main_start.tv_sec;
+  time_from_st += (st.tv_usec - main_start.tv_usec) * 0.000001;
   fprintf(comm_put, "%d %d put %lf %lf %s\n",
-          chpl_nodeID, locale, op_time_put, time_from_st_put, fn);
+          chpl_nodeID, locale, op_time, time_from_st, fn);
   return;
 }
 
