@@ -64,18 +64,20 @@ int main(int argc, char** argv)
 {
   int numlocs, numgets = 0, rect_width, numputs = 0, pos,
       w_found = 0, i, j, col = 0, us_loc_count = 0,
-      m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0;
+      m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0,
+      transfered_size = 0;
   char info[100], to[100], comm_op[100], color[25],
-       buf[100], **modules = NULL, **m_temp;
+       buf[100], **modules = NULL, **m_temp, tmp[10];
   float end_time, ops_time = 0.0;
 
-  FILE *f, *graph, *nl, *matrix, *timeline;
+  FILE *f, *graph, *nl, *matrix, *timeline, *collect_info;
   fpos_t position_height, position_last;
   f = fopen("results/m", "r");
   graph = fopen("results/graph.gv", "w");
   nl = fopen("results/info", "r");
   matrix = fopen("results/matrix.html", "w");
   timeline = fopen("results/timeline.html", "w");
+  collect_info = fopen("results/gathered_info", "w");
 
   action *ac, *max_op;
   ac = (action *)malloc(sizeof(action));
@@ -160,6 +162,8 @@ int main(int argc, char** argv)
     fscanf(f, "%s", buf);
     strcpy(buf, get_name(buf));
     strcpy(ac->module, buf);
+    fscanf(f, "%s", tmp);
+    transfered_size += atoi(tmp);
 
     if(ac->exec > max_op->exec){
       max_op->exec = ac->exec;
@@ -330,6 +334,20 @@ int main(int argc, char** argv)
                         CL / 2 + CL * i + CL / 2 + CL / 5,
                        	CL + CL * j + CL / 4 + CL / 6, ops[i][j].put);
       }
+      // Graph generation
+      if(ops[i][j].show == 1){
+        if((ops[i][j].get == 0) &&
+          (ops[i][j].put == 0))
+          fprintf(graph, "  loc%d;\n  loc%d;", i, j);
+
+        if(ops[i][j].get != 0)
+           fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
+                       fontsize = 20];\n", i, j, ops[i][j].get);
+
+        if(ops[i][j].put != 0)
+          fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
+                       fontsize = 20];\n",i, j, ops[i][j].put);
+      }
     }
   }
   // Timeline annotation
@@ -355,11 +373,11 @@ int main(int argc, char** argv)
     create_color(modules[i], color);
     fprintf(timeline, "<rect x = \"%d\" y = \"%d\" width = \"%d\" height = \"%d\" \
                       style = \"fill:%s\"/>\n",
-                      40, CL * numlocs + 40 + 30 * i, 20, 20, color);
+                      40, CL * numlocs + 40 + 25 * i, 20, 20, color);
 
     fprintf(timeline, "<text x = \"%d\" y = \"%d\" \
                       style = \"fill:black;font-family:arial\"> %s </text>\n",
-                      70, CL * numlocs + 55 + 30 * i , modules[i]);
+                      70, CL * numlocs + 55 + 25 * i , modules[i]);
 
   }
   // program execution info
@@ -408,28 +426,20 @@ int main(int argc, char** argv)
                       CL / 2+ CL* i + 5 ,CL / 2 + 5 + CL * numlocs);
     }
 
-  // Creating graph, before that user
-  // defined locales check
-  for(i = 0; i < numlocs; ++i){
-    for(j = 0; j < numlocs; ++j){
-      if(ops[i][j].show == 1){
-        if((ops[i][j].get == 0) &&
-          (ops[i][j].put == 0))
-          fprintf(graph, "  loc%d;\n  loc%d;", i, j);
-
-        if(ops[i][j].get != 0)
-           fprintf(graph, "  loc%d -> loc%d[ label = \"get,%d\", \
-                       fontsize = 20];\n", i, j, ops[i][j].get);
-
-        if(ops[i][j].put != 0)
-          fprintf(graph, "  loc%d -> loc%d[ label = \"put,%d\", \
-                       fontsize = 20];\n",i, j, ops[i][j].put);
-      }
-    }
-  }
+  // Info file generation
+  fprintf(collect_info, "%d gets and %d puts were initiated;\
+                         \r%d bytes of data were transfered;\
+                         \rprogram was running for %.3f seconds;\
+                         \rexchanges were running for %.3f seconds (%.2f%% of time);\
+                         \rthe longest exchange was initiated by %s module;\
+                         \rit was running for %f seconds (%f%% of time)",
+                         numgets, numputs, transfered_size, end_time,
+                         ops_time, (ops_time / end_time) * 100, max_op->module,
+                         max_op->exec, (max_op->exec / end_time) * 100);
+  fclose(collect_info);
   fseek(timeline, pos, SEEK_SET);
   fprintf(timeline, "height = \"%dpx\" width = \"%dpx\">",
-                    CL * numlocs + 40 + 30 * m_size, WIDTH);
+                    CL * numlocs + 40 + 25 * m_size, WIDTH);
   fseek(timeline, 0, SEEK_END);
   fprintf(timeline, "</svg>");
   fclose(timeline);
