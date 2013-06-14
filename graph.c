@@ -66,7 +66,7 @@ int main(int argc, char** argv)
       w_found = 0, i, j, col = 0, us_loc_count = 0,
       m_size = 0, found = 0, WIDTH = 1300, *us_loc, k = 0,
       transfered_size = 0;
-  char info[100], to[100], comm_op[100], color[25],
+  char info[100], to[100], comm_op[100], color[25], prog[100],
        buf[100], **modules = NULL, **m_temp, tmp[10];
   float end_time, ops_time = 0.0;
 
@@ -84,6 +84,7 @@ int main(int argc, char** argv)
   max_op = (action *)malloc(sizeof(action));
   oper **ops;
 
+  fscanf(nl, "%s", prog);
   fscanf(nl, "%s", info);
   numlocs = atoi(info);
   fscanf(nl, "%s", info);
@@ -366,8 +367,8 @@ int main(int argc, char** argv)
   fprintf(timeline, "<text x = \"250\" y = \"20\" \
                    fill = \"black\" font-size=\"12\" \
                    style=\"font-family:arial\" \
-                   >Program execution(exchanges between locales are colored)</text>\n",
-                   CL * (i + 1) + CL / 3, i);
+                   >%s execution(exchanges between locales are colored)</text>\n",
+                   prog, CL * (i + 1) + CL / 3, i);
 
   for(i = 0; i < m_size; ++i){
     create_color(modules[i], color);
@@ -404,14 +405,15 @@ int main(int argc, char** argv)
   // Matrix annotation
   fprintf(matrix, "<text x = \"%d\" y = \"11\" \
                   fill = \"black\" font-family = \"arial\"> \
-                  Locales-senders </text>\n", (CL * numlocs) / 2 - 30, i);
+                  Locales-senders at %s</text>\n",
+                 (CL * numlocs) / 2 - 30, prog);
 
   fprintf(matrix, "<text x = \"%d\" y = \"%d\" \
                   transform = \"rotate(270 %d, %d)\" \
                   fill = \"black\" font-family = \"arial\" \
-                  >Locales-receivers</text>\n",
+                  >Locales-receivers at %s</text>\n",
                   CL / 3 - 5, (CL * numlocs) / 2 + 80,
-                  CL / 3 - 5, (CL * numlocs) / 2 + 80, i);
+                  CL / 3 - 5, (CL * numlocs) / 2 + 80, prog);
 
   // Net
   for(i = 0; i < numlocs + 1; ++i)
@@ -427,13 +429,14 @@ int main(int argc, char** argv)
     }
 
   // Info file generation
-  fprintf(collect_info, "%d gets and %d puts were initiated;\
+  fprintf(collect_info, "Program %s was executed on %d locales; \
+                         \r%d gets and %d puts were initiated;\
                          \r%d bytes of data were transfered;\
                          \rprogram was running for %.3f seconds;\
                          \rexchanges were running for %.3f seconds (%.2f%% of time);\
                          \rthe longest exchange was initiated by %s module;\
-                         \rit was running for %f seconds (%f%% of time)",
-                         numgets, numputs, transfered_size, end_time,
+                         \rit was running for %f seconds (%f%% of time).",
+                         prog, numlocs, numgets, numputs, transfered_size, end_time,
                          ops_time, (ops_time / end_time) * 100, max_op->module,
                          max_op->exec, (max_op->exec / end_time) * 100);
   fclose(collect_info);
