@@ -16,5 +16,3 @@ rm -f results/chpl_comm* h.o* prog prog_real results/info
 chpl $prog_name -o prog $name --ldflags "$options"
 
 echo $prog_name >> results/info
-
-qsub h.job
